@@ -16,7 +16,7 @@ async def main():
     )
 
     dp = Dispatcher()
-    dp.include_router(router)  # Регистрируем роутер напрямую
+    dp.include_router(router)
 
     print("Бот запущен...")
     try:
