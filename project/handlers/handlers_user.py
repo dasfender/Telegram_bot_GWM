@@ -14,14 +14,11 @@ class Form(StatesGroup):
     waiting_video = State()
     close_request = State()
 
-# Дилерские коды пользователей
 DEALER_CODES = {}  # user_id: dealer_code
 
-# Папка для хранения данных
 DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Главное меню
 main_menu = ReplyKeyboardMarkup(
     keyboard=[[KeyboardButton(text="Start"), KeyboardButton(text="Help")]],
     resize_keyboard=True

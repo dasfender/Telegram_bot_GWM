@@ -11,4 +11,3 @@ if not os.path.exists(DATA_FOLDER):
 
 DEALER_CODES_FILE = os.path.join(DATA_FOLDER, "dealer_codes.json")
 
-
