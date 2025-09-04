@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8c167dda-4a68-4b86-b671-d9f63d4a7bd9" name="Changes" comment="update buttons, change logic. Need update save logic &gt; now is replaced filed from 1 delaer code, need more material from 1 code">
+      <change beforePath="$PROJECT_DIR$/project/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/project/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/handlers/__init_.py" beforeDir="false" afterPath="$PROJECT_DIR$/project/handlers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/handlers/handlers_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/project/handlers/handlers_user.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/project/handlers/request_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/project/handlers/request_handler.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Amikalio&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/dasfender/Telegram_bot_GWM.git&quot;,
+    &quot;accountId&quot;: &quot;19e3eedc-1fce-4852-83a5-8c00869264e6&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="31B8QrpUMfD3WHh7LEXUL6bXXJW" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.admin.executor&quot;: &quot;Run&quot;,
+    &quot;Python.bot.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dealers_utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.file_utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.handlers.executor&quot;: &quot;Run&quot;,
+    &quot;Python.help.executor&quot;: &quot;Run&quot;,
+    &quot;Python.other_utils.executor&quot;: &quot;Run&quot;,
+    &quot;Python.registration.executor&quot;: &quot;Run&quot;,
+    &quot;Python.request_handler.executor&quot;: &quot;Run&quot;,
+    &quot;Python.requests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/project" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/Project" />
+      <recent name="$PROJECT_DIR$/Project/handlers" />
+      <recent name="$PROJECT_DIR$/handlers" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-41e8cd69c857-64d779b69b7a-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26927.90" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8c167dda-4a68-4b86-b671-d9f63d4a7bd9" name="Changes" comment="" />
+      <created>1754986091864</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1754986091864</updated>
+    </task>
+    <task id="LOCAL-00001" summary="First version of bot">
+      <option name="closed" value="true" />
+      <created>1754994293125</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1754994293125</updated>
+    </task>
+    <task id="LOCAL-00002" summary="update commands, add new functions">
+      <option name="closed" value="true" />
+      <created>1755161328496</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1755161328496</updated>
+    </task>
+    <task id="LOCAL-00003" summary="update commands, add new functions">
+      <option name="closed" value="true" />
+      <created>1755171038109</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1755171038109</updated>
+    </task>
+    <task id="LOCAL-00004" summary="update commands, add new functions">
+      <option name="closed" value="true" />
+      <created>1755177866122</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1755177866122</updated>
+    </task>
+    <task id="LOCAL-00005" summary="update buttons, change logic. Need update save logic &gt; now is replaced filed from 1 delaer code, need more material from 1 code">
+      <option name="closed" value="true" />
+      <created>1755179375390</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1755179375391</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="First version of bot" />
+    <MESSAGE value="update commands, add new functions" />
+    <MESSAGE value="update buttons, change logic. Need update save logic &gt; now is replaced filed from 1 delaer code, need more material from 1 code" />
+    <option name="LAST_COMMIT_MESSAGE" value="update buttons, change logic. Need update save logic &gt; now is replaced filed from 1 delaer code, need more material from 1 code" />
+  </component>
+</project>

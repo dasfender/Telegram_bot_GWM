@@ -9,7 +9,6 @@ from pathlib import Path
 import json
 from project.config import ADMIN_ID
 
-
 router = Router()
 
 BASE_DIR = Path(__file__).parent.parent
@@ -19,14 +18,14 @@ DEALER_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class RequestStates(StatesGroup):
-    waiting_dealer_code=State()
-    waiting_problem_description=State()
-    choose_media=State()
-    choose_photos=State()
-    choose_video=State()
-    confirm_finish=State()
-    adding_photos=State()
-    adding_videos=State()
+    waiting_dealer_code = State()
+    waiting_problem_description = State()
+    choose_media = State()
+    choose_photos = State()
+    choose_video = State()
+    confirm_finish = State()
+    adding_photos = State()
+    adding_videos = State()
 
 
 def load_dealer_codes():
@@ -38,6 +37,7 @@ def load_dealer_codes():
     except Exception as e:
         print(f"Error loading dealer codes: {e}")
         return {}
+
 
 def save_dealer_codes(codes):
     try:
@@ -118,7 +118,7 @@ async def handle_help_button(message: types.Message):
     """Обработчик кнопки Help из клавиатуры"""
     help_text = (
         "📌 <b>Инструкция по работе с ботом</b>\n\n"
-        "1. Введите код дилера (формат: H-00-000, PY-00-000)\n"
+        "1. Введите код дилера (формат: H-00-000 или PY-00-000)\n"
         "2. Опишите проблему текстом\n"
         "3. Прикрепите фото/видео (макс. 20 файлов)\n"
         "4. Подтвердите отправку\n\n"
@@ -132,7 +132,7 @@ async def handle_help_button(message: types.Message):
 async def show_help(callback: types.CallbackQuery):
     help_text = (
         "📌 <b>Инструкция по работе с ботом</b>\n\n"
-        "1. Введите код дилера (формат: H-00-000, PY-00-000)\n"
+        "1. Введите код дилера (формат: H-00-000 или PY-00-000)\n"
         "2. Опишите проблему текстом\n"
         "3. Прикрепите фото/видео (макс. 20 файлов)\n"
         "4. Подтвердите отправку\n\n"
@@ -189,19 +189,40 @@ async def cmd_start(message: types.Message, state: FSMContext):
     else:
         await message.answer(
             "👋 Добро пожаловать!\n\n"
-            "Введите ваш дилерский код (формат: H-00-00 или PY-00-00):",
+            "Введите ваш дилерский код (формат: H-00-000 или PY-00-000):",
             reply_markup=remove_keyboard()
         )
         await state.set_state(RequestStates.waiting_dealer_code)
 
 
+def is_valid_dealer_code(code: str) -> bool:
+    """Проверяет правильность формата кода дилера"""
+    if not (code.startswith('H-') or code.startswith('PY-')):
+        return False
+
+    # Проверяем длину: H-00-000 (8 символов) или PY-00-000 (9 символов)
+    if code.startswith('H-') and len(code) != 8:
+        return False
+    if code.startswith('PY-') and len(code) != 9:
+        return False
+
+    # Проверяем что после префикса идут цифры и дефисы в правильном формате
+    parts = code.split('-')
+    if len(parts) != 3:
+        return False
+
+    # Проверяем что вторая и третья части состоят только из цифр
+    return parts[1].isdigit() and parts[2].isdigit()
+
+
 @router.message(RequestStates.waiting_dealer_code)
-async def save_dealer_code(message: types.Message, state: FSMContext):
+async def process_dealer_code(message: types.Message, state: FSMContext):
+    """Обработчик ввода кода дилера"""
     dealer_code = message.text.strip().upper()
 
-    # Исправляем проверку формата (было DLR, должно быть H или PY)
-    if not (dealer_code.startswith(('H-', 'PY-')) and len(dealer_code) == 8):
-        await message.answer("❌ Неверный формат! Используйте H-00-00 или PY-00-00")
+    # Проверка формата кода дилера
+    if not is_valid_dealer_code(dealer_code):
+        await message.answer("❌ Неверный формат! Используйте H-00-000 или PY-00-000")
         return
 
     user_id = str(message.from_user.id)
@@ -216,7 +237,7 @@ async def save_dealer_code(message: types.Message, state: FSMContext):
         f"Нажмите кнопку '🚀 Start' чтобы начать новый запрос",
         reply_markup=get_reply_kb()
     )
-    await state.set_state(None)
+    await state.clear()
 
 
 @router.callback_query(F.data == "start_request")
@@ -227,7 +248,8 @@ async def start_request(callback: types.CallbackQuery, state: FSMContext):
     print(f"Start pressed by {user_id}. Dealer codes: {dealer_codes}")
 
     if user_id not in dealer_codes:
-        await callback.message.answer("❌ Сначала введите код дилера! Используйте команду /start", reply_markup=get_reply_kb())
+        await callback.message.answer("❌ Сначала введите код дилера! Используйте команду /start",
+                                      reply_markup=get_reply_kb())
         await callback.answer()
         return
 
@@ -246,6 +268,7 @@ async def start_request(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.answer("Опишите проблему:")
     await state.set_state(RequestStates.waiting_problem_description)
     await callback.answer()
+
 
 @router.message(RequestStates.waiting_problem_description)
 async def save_problem_description(message: types.Message, state: FSMContext):
