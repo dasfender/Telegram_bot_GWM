@@ -2,11 +2,13 @@ from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import InlineKeyboardMarkup, Message
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import InlineKeyboardMarkup, Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from datetime import datetime
 from pathlib import Path
 import json
+from project.config import ADMIN_ID
+
 
 router = Router()
 
@@ -16,25 +18,33 @@ DEALER_CODES_FILE = BASE_DIR / "dealer_codes.json"
 DEALER_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def load_dealer_codes():
-    if DEALER_CODES_FILE.exists():
-        with open(DEALER_CODES_FILE, 'r') as f:
-            return json.load(f)
-    return {}
+class RequestStates(StatesGroup):
+    waiting_dealer_code=State()
+    waiting_problem_description=State()
+    choose_media=State()
+    choose_photos=State()
+    choose_video=State()
+    confirm_finish=State()
+    adding_photos=State()
+    adding_videos=State()
 
+
+def load_dealer_codes():
+    try:
+        if DEALER_CODES_FILE.exists():
+            with open(DEALER_CODES_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        return {}
+    except Exception as e:
+        print(f"Error loading dealer codes: {e}")
+        return {}
 
 def save_dealer_codes(codes):
-    with open(DEALER_CODES_FILE, 'w') as f:
-        json.dump(codes, f)
-
-
-class RequestStates(StatesGroup):
-    waiting_dealer_code = State()
-    waiting_problem_description = State()
-    choose_media = State()
-    adding_photos = State()
-    adding_videos = State()
-    confirm_finish = State()
+    try:
+        with open(DEALER_CODES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(codes, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error saving dealer codes: {e}")
 
 
 def create_dealer_folder(dealer_code: str) -> Path:
@@ -61,17 +71,74 @@ def get_main_kb() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def get_reply_kb() -> ReplyKeyboardMarkup:
+    """Основная клавиатура с кнопками Start и Help (кнопки внизу экрана)"""
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🚀 Start"), KeyboardButton(text="ℹ️ Help")]
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="Выберите действие..."
+    )
+
+
+def remove_keyboard() -> ReplyKeyboardMarkup:
+    """Убирает клавиатуру"""
+    return ReplyKeyboardMarkup(keyboard=[], resize_keyboard=True)
+
+
+@router.message(F.text == "🚀 Start")
+async def handle_start_button(message: types.Message, state: FSMContext):
+    """Обработчик кнопки Start из клавиатуры"""
+    dealer_codes = load_dealer_codes()
+    user_id = str(message.from_user.id)
+
+    if user_id not in dealer_codes:
+        await message.answer("❌ Сначала введите код дилера! Используйте команду /start", reply_markup=get_reply_kb())
+        return
+
+    # Получаем код дилера
+    dealer_code = dealer_codes[user_id]
+
+    # Добавляем приветствие с именем пользователя и кодом дилера
+    await message.answer(
+        f"👋 Привет, {message.from_user.first_name}! Ваш код дилера: {dealer_code}",
+        reply_markup=remove_keyboard()
+    )
+
+    # Сохраняем код дилера в state
+    await state.update_data(dealer_code=dealer_code)
+
+    await message.answer("Опишите проблему:")
+    await state.set_state(RequestStates.waiting_problem_description)
+
+
+@router.message(F.text == "ℹ️ Help")
+async def handle_help_button(message: types.Message):
+    """Обработчик кнопки Help из клавиатуры"""
+    help_text = (
+        "📌 <b>Инструкция по работе с ботом</b>\n\n"
+        "1. Введите код дилера (формат: H-00-000, PY-00-000)\n"
+        "2. Опишите проблему текстом\n"
+        "3. Прикрепите фото/видео (макс. 20 файлов)\n"
+        "4. Подтвердите отправку\n\n"
+        "Каждый запрос сохраняется в отдельную папку.\n\n"
+        "Нажмите '🚀 Start' чтобы начать новый запрос!"
+    )
+    await message.answer(help_text, parse_mode="HTML", reply_markup=get_reply_kb())
+
+
 @router.callback_query(F.data == "help")
 async def show_help(callback: types.CallbackQuery):
     help_text = (
         "📌 <b>Инструкция по работе с ботом</b>\n\n"
-        "1. Введите код дилера (формат: DLR123)\n"
+        "1. Введите код дилера (формат: H-00-000, PY-00-000)\n"
         "2. Опишите проблему текстом\n"
         "3. Прикрепите фото/видео (макс. 20 файлов)\n"
         "4. Подтвердите отправку\n\n"
         "Каждый запрос сохраняется в отдельную папку."
     )
-    await callback.message.answer(help_text, parse_mode="HTML")
+    await callback.message.answer(help_text, parse_mode="HTML", reply_markup=get_reply_kb())
     await callback.answer()
 
 
@@ -104,35 +171,37 @@ def get_finish_kb() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_new_request_kb() -> InlineKeyboardMarkup:
-    builder = InlineKeyboardBuilder()
-    builder.button(text="Start", callback_data="start_request")
-    builder.button(text="Help", callback_data="help")
-    builder.adjust(1)
-    return builder.as_markup()
-
-
 @router.message(Command("start"))
 async def cmd_start(message: types.Message, state: FSMContext):
     dealer_codes = load_dealer_codes()
     user_id = str(message.from_user.id)
 
+    print(f"User {user_id} started. Dealer codes: {dealer_codes}")
+
     if user_id in dealer_codes:
         dealer_code = dealer_codes[user_id]
         await message.answer(
-            f"Привет, {message.from_user.first_name}! Ваш код: {dealer_code}",
-            reply_markup=get_main_kb()
+            f"👋 Добро пожаловать, {message.from_user.first_name}!\n"
+            f"Ваш сохраненный код дилера: {dealer_code}\n\n"
+            f"Нажмите кнопку '🚀 Start' чтобы начать новый запрос",
+            reply_markup=get_reply_kb()
         )
     else:
-        await message.answer("Введите ваш дилерский код (формат: DLR123):")
+        await message.answer(
+            "👋 Добро пожаловать!\n\n"
+            "Введите ваш дилерский код (формат: H-00-00 или PY-00-00):",
+            reply_markup=remove_keyboard()
+        )
         await state.set_state(RequestStates.waiting_dealer_code)
 
 
 @router.message(RequestStates.waiting_dealer_code)
 async def save_dealer_code(message: types.Message, state: FSMContext):
     dealer_code = message.text.strip().upper()
-    if not (dealer_code.startswith('DLR') and dealer_code[3:].isdigit()):
-        await message.answer("❌ Неверный формат! Используйте DLR123")
+
+    # Исправляем проверку формата (было DLR, должно быть H или PY)
+    if not (dealer_code.startswith(('H-', 'PY-')) and len(dealer_code) == 8):
+        await message.answer("❌ Неверный формат! Используйте H-00-00 или PY-00-00")
         return
 
     user_id = str(message.from_user.id)
@@ -140,31 +209,43 @@ async def save_dealer_code(message: types.Message, state: FSMContext):
     dealer_codes[user_id] = dealer_code
     save_dealer_codes(dealer_codes)
 
-    # Сохраняем код дилера в state
     await state.update_data(dealer_code=dealer_code)
 
     await message.answer(
-        f"✅ Код {dealer_code} сохранен!",
-        reply_markup=get_main_kb()
+        f"✅ Код {dealer_code} сохранен!\n\n"
+        f"Нажмите кнопку '🚀 Start' чтобы начать новый запрос",
+        reply_markup=get_reply_kb()
     )
     await state.set_state(None)
+
 
 @router.callback_query(F.data == "start_request")
 async def start_request(callback: types.CallbackQuery, state: FSMContext):
     dealer_codes = load_dealer_codes()
     user_id = str(callback.from_user.id)
 
+    print(f"Start pressed by {user_id}. Dealer codes: {dealer_codes}")
+
     if user_id not in dealer_codes:
-        await callback.answer("❌ Сначала введите код дилера!", show_alert=True)
+        await callback.message.answer("❌ Сначала введите код дилера! Используйте команду /start", reply_markup=get_reply_kb())
+        await callback.answer()
         return
 
+    # Получаем код дилера
+    dealer_code = dealer_codes[user_id]
+
+    # Добавляем приветствие с именем пользователя и кодом дилера
+    await callback.message.answer(
+        f"👋 Привет, {callback.from_user.first_name}! Ваш код дилера: {dealer_code}",
+        reply_markup=remove_keyboard()
+    )
+
     # Сохраняем код дилера в state
-    await state.update_data(dealer_code=dealer_codes[user_id])
+    await state.update_data(dealer_code=dealer_code)
 
     await callback.message.answer("Опишите проблему:")
     await state.set_state(RequestStates.waiting_problem_description)
     await callback.answer()
-
 
 @router.message(RequestStates.waiting_problem_description)
 async def save_problem_description(message: types.Message, state: FSMContext):
@@ -186,7 +267,7 @@ async def save_problem_description(message: types.Message, state: FSMContext):
             await state.update_data(dealer_code=dealer_code)
             user_data["dealer_code"] = dealer_code
         else:
-            await message.answer("❌ Код дилера не найден. Начните заново /start")
+            await message.answer("❌ Код дилера не найден. Начните заново /start", reply_markup=get_reply_kb())
             await state.clear()
             return
 
@@ -219,14 +300,14 @@ async def choose_media(callback: types.CallbackQuery, state: FSMContext):
         await callback.message.answer(
             "📷 Отправьте фото проблемы\n"
             "⚠️ Принимаются только изображения в формате JPG/PNG",
-            reply_markup=types.ReplyKeyboardRemove()
+            reply_markup=remove_keyboard()
         )
         await state.set_state(RequestStates.adding_photos)
     else:
         await callback.message.answer(
             "🎥 Отправьте видео проблемы\n"
             "⚠️ Принимаются только видео в формате MP4/MPEG",
-            reply_markup=types.ReplyKeyboardRemove()
+            reply_markup=remove_keyboard()
         )
         await state.set_state(RequestStates.adding_videos)
     await callback.answer()
@@ -422,9 +503,9 @@ async def finish_request(callback: types.CallbackQuery, state: FSMContext):
         f.write(f"Видео: {len(user_data.get('videos', []))}\n")
 
     await callback.message.answer(
-        f"✅ Запрос #{request_folder.name} сохранен!\n"
-        f"Папка: {request_folder}",
-        reply_markup=get_new_request_kb()
+        f"✅ Ваш запрос сохранен!\n\n"
+        f"Нажмите '🚀 Start' для нового запроса",
+        reply_markup=get_reply_kb()
     )
     await state.clear()
     await callback.answer()
